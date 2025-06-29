@@ -562,7 +562,7 @@ export class GoogleMailManager implements MailManager {
         const { html: message, inlineImages } = await sanitizeTipTapHtml(data.message);
         const msg = createMimeMessage();
         msg.setSender('me');
-        // name <email@example.com>
+
         const to = data.to.split(', ').map((recipient: string) => {
           if (recipient.includes('<')) {
             const [name, email] = recipient.split('<');
@@ -572,12 +572,10 @@ export class GoogleMailManager implements MailManager {
         });
 
         msg.setTo(to);
-        if (data.cc)
-          msg.setCc(data.cc?.split(', ').map((recipient: string) => ({ addr: recipient })));
-        if (data.bcc)
-          msg.setBcc(data.bcc?.split(', ').map((recipient: string) => ({ addr: recipient })));
-
+        if (data.cc) msg.setCc(data.cc.split(', ').map((addr) => ({ addr })));
+        if (data.bcc) msg.setBcc(data.bcc.split(', ').map((addr) => ({ addr })));
         msg.setSubject(data.subject);
+
         msg.addMessage({
           contentType: 'text/html',
           data: message || '',
@@ -598,7 +596,86 @@ export class GoogleMailManager implements MailManager {
           }
         }
 
-        if (data.attachments && data.attachments?.length > 0) {
+        if (data.attachments?.length) {
+          for (const attachment of data.attachments) {
+            // const arrayBuffer = await attachment.arrayBuffer();
+            // const base64Data = Buffer.from(arrayBuffer).toString('base64');
+            const base64Data = await attachment.base64;
+            msg.addAttachment({
+              filename: attachment.name,
+              contentType: attachment.type,
+              data: base64Data,
+            });
+          }
+        }
+
+        const mimeMessage = msg.asRaw();
+        const encodedMessage = Buffer.from(mimeMessage)
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+
+        const requestBody = {
+          message: {
+            raw: encodedMessage,
+            threadId: data.threadId,
+          },
+        };
+
+        const res = await this.gmail.users.drafts.create({
+          userId: 'me',
+          requestBody,
+        });
+
+        return res.data;
+      },
+      { data }
+    );
+  }
+  public updateDraft(data: CreateDraftData) {
+    return this.withErrorHandler(
+      'updateDraft',
+      async () => {
+        if (!data.id) throw new Error('Missing draft ID for update');
+
+        const { html: message, inlineImages } = await sanitizeTipTapHtml(data.message);
+        const msg = createMimeMessage();
+        msg.setSender('me');
+
+        const to = data.to.split(', ').map((recipient: string) => {
+          if (recipient.includes('<')) {
+            const [name, email] = recipient.split('<');
+            return { addr: email.replace('>', ''), name: name.replace('>', '') };
+          }
+          return { addr: recipient };
+        });
+
+        msg.setTo(to);
+        if (data.cc) msg.setCc(data.cc.split(', ').map((addr) => ({ addr })));
+        if (data.bcc) msg.setBcc(data.bcc.split(', ').map((addr) => ({ addr })));
+        msg.setSubject(data.subject);
+
+        msg.addMessage({
+          contentType: 'text/html',
+          data: message || '',
+        });
+        if (inlineImages.length > 0) {
+          for (const image of inlineImages) {
+            msg.addAttachment({
+              inline: true,
+              filename: `${image.cid}`,
+              contentType: image.mimeType,
+              data: image.data,
+              headers: {
+                'Content-ID': `<${image.cid}>`,
+                'Content-Disposition': 'inline',
+              },
+            });
+          }
+        }
+
+        if (data.attachments?.length) {
           for (const attachment of data.attachments) {
             const base64Data = attachment.base64;
             msg.addAttachment({
@@ -623,24 +700,29 @@ export class GoogleMailManager implements MailManager {
           },
         };
 
-        let res;
-
-        if (data.id) {
-          res = await this.gmail.users.drafts.update({
-            userId: 'me',
-            id: data.id,
-            requestBody,
-          });
-        } else {
-          res = await this.gmail.users.drafts.create({
-            userId: 'me',
-            requestBody,
-          });
-        }
+        const res = await this.gmail.users.drafts.update({
+          userId: 'me',
+          id: data.id,
+          requestBody,
+        });
 
         return res.data;
       },
-      { data },
+      { data }
+    );
+  }
+  public deleteDraft(data: CreateDraftData){
+    return this.withErrorHandler(
+      'deleteDraft',
+      async () =>{
+        if (!data.id) throw new Error('Missing draft ID to delete');
+        
+        const res = await this.gmail.users.drafts.delete({
+          userId: 'me',
+          id: data.id,
+        })
+        return res.data;
+      } , {data}
     );
   }
   public async getUserLabels() {

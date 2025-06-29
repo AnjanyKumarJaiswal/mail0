@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check, Command, Loader, Paperclip, Plus, X as XIcon } from 'lucide-react';
+import { Check, Command, Loader, Paperclip, Plus, Trash, X as XIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TextEffect } from '@/components/motion-primitives/text-effect';
 import { useActiveConnection } from '@/hooks/use-connections';
@@ -25,7 +25,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useTRPC } from '@/providers/query-provider';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSettings } from '@/hooks/use-settings';
 import { cn, formatFileSize } from '@/lib/utils';
 import { useThread } from '@/hooks/use-threads';
@@ -42,6 +42,7 @@ import { ImageCompressionSettings } from './image-compression-settings';
 import { compressImages } from '@/lib/image-compression';
 import type { ImageQuality } from '@/lib/image-compression';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DraftNotification, useDraftNotification } from '../ui/draftnotification';
 
 type ThreadContent = {
   from: string;
@@ -69,6 +70,7 @@ interface EmailComposerProps {
     fromEmail?: string;
   }) => Promise<void>;
   onClose?: () => void;
+  onDraftUpdate?: () => void;
   className?: string;
   autofocus?: boolean;
   settingsLoading?: boolean;
@@ -101,6 +103,7 @@ export function EmailComposer({
   initialAttachments = [],
   onSendEmail,
   onClose,
+  onDraftUpdate,
   className,
   autofocus = false,
   settingsLoading = false,
@@ -114,6 +117,7 @@ export function EmailComposer({
   const [showBcc, setShowBcc] = useState(initialBcc.length > 0);
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isDeleteDraft, setIsDeleteDraft] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [messageLength, setMessageLength] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -206,6 +210,8 @@ export function EmailComposer({
       }
     }
   };
+  // const [showDraftMessage, setshowDraftMessage] = useState("");
+  const { notification, showSaveNotification, hideNotification } = useDraftNotification();
 
   // Add this function to handle clicks outside the input fields
   useEffect(() => {
@@ -240,6 +246,8 @@ export function EmailComposer({
   const trpc = useTRPC();
   const { mutateAsync: aiCompose } = useMutation(trpc.ai.compose.mutationOptions());
   const { mutateAsync: createDraft } = useMutation(trpc.drafts.create.mutationOptions());
+  const {mutateAsync: updateDraft} = useMutation(trpc.drafts.update.mutationOptions());
+  const {mutateAsync: deleteDraft} = useMutation(trpc.drafts.delete.mutationOptions());
   const { mutateAsync: generateEmailSubject } = useMutation(
     trpc.ai.generateEmailSubject.mutationOptions(),
   );
@@ -538,6 +546,8 @@ export function EmailComposer({
     }
   };
 
+
+  //this whole method is for saving draft and its called when the useeffect is triggered
   const saveDraft = async () => {
     const values = getValues();
 
@@ -571,11 +581,29 @@ export function EmailComposer({
         fromEmail: values.fromEmail ? values.fromEmail : null,
       };
 
+      if(draftId){
+        const response = await updateDraft(draftData);
+        if(response?.id){
+          setDraftId(response?.id);
+          onDraftUpdate?.();
+          showSaveNotification('Your Draft has been Successfully Saved');
+        }
+        else{
+          const response = await createDraft(draftData);
+          if(response?.id){
+          setDraftId(response?.id);
+          showSaveNotification('Your Draft has been Successfully Saved');
+        }
+          console.error("Failed Setting up Draft Id")
+          toast.error("Failed Setting up Draft Id")
+        }
+      } else {
       const response = await createDraft(draftData);
-
-      if (response?.id && response.id !== draftId) {
-        setDraftId(response.id);
+      if(response?.id){
+        setDraftId(response?.id);
+        showSaveNotification('Your Draft has been Successfully Saved');
       }
+    }
     } catch (error) {
       console.error('Error saving draft:', error);
       toast.error('Failed to save draft');
@@ -584,6 +612,76 @@ export function EmailComposer({
     } finally {
       setIsSavingDraft(false);
       setHasUnsavedChanges(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const autoSaveTimer = setTimeout(() => {
+      console.log('Draft Save TimeOut');
+      saveDraft();
+    }, 3000);
+
+    return () => clearTimeout(autoSaveTimer);
+  }, [hasUnsavedChanges, saveDraft]);
+
+  // this handleSaveclick for saving drafts might be used in future when save button is introduced
+  // const handleSaveClick = () =>{
+  //   const hasContent = editor?.getText()?.trim().length > 0;
+  //   if(hasContent){
+  //     onDraftUpdate?.();
+  //     showSaveNotification('Your Draft has been Successfully Saved');
+  //   }
+  // }
+
+  //ths function is going to be used to delete drafts
+  const handleDeleteDraft = async () => {
+    const values = getValues();
+    if (!draftId) {
+      toast.error('No draft Id available to delete any Draft.');
+      return;
+    }
+    try {
+      const draftData = {
+        to: values.to.join(', '),
+        cc: values.cc?.join(', '),
+        bcc: values.bcc?.join(', '),
+        subject: values.subject,
+        message: editor.getHTML(),
+        attachments: await serializeFiles(values.attachments ?? []),
+        id: draftId,
+        threadId: threadId ? threadId : null,
+        fromEmail: values.fromEmail ? values.fromEmail : null,
+      };
+
+      if(draftId){
+        const response = await deleteDraft(draftData);
+        if(response === ''){
+          setDraftId(null); 
+          setIsComposeOpen(null);
+          setTimeout(() => {
+          const currentUrl = new URL(window.location.href);
+          window.location.href = currentUrl.toString();
+        }, 500);
+        } 
+        }
+    } catch (error) {
+      console.error('Failed to delete draft:', error);
+      toast.error('Failed to delete draft.');
+    } finally {
+      setIsDeleteDraft(false);
+    }
+  };
+
+  // this handleclose button triggeres to auto-save draft upon close 
+  const handleClose = () => {
+    const hasContent = editor?.getText()?.trim().length > 0;
+    if (hasContent) {
+      saveDraft();
+      setShowLeaveConfirmation(true);
+    } else {
+      onClose?.();
     }
   };
 
@@ -608,14 +706,6 @@ export function EmailComposer({
     }
   };
 
-  const handleClose = () => {
-    const hasContent = editor?.getText()?.trim().length > 0;
-    if (hasContent) {
-      setShowLeaveConfirmation(true);
-    } else {
-      onClose?.();
-    }
-  };
 
   const confirmLeave = () => {
     setShowLeaveConfirmation(false);
@@ -639,16 +729,6 @@ export function EmailComposer({
     };
   }, [editor, showLeaveConfirmation]);
 
-  useEffect(() => {
-    if (!hasUnsavedChanges) return;
-
-    const autoSaveTimer = setTimeout(() => {
-      console.log('timeout set');
-      saveDraft();
-    }, 3000);
-
-    return () => clearTimeout(autoSaveTimer);
-  }, [hasUnsavedChanges, saveDraft]);
 
   useEffect(() => {
     const handlePasteFiles = (event: ClipboardEvent) => {
@@ -901,7 +981,7 @@ export function EmailComposer({
                   tabIndex={-1}
                   className="flex h-full items-center gap-2 text-sm font-medium text-[#8C8C8C] hover:text-[#A8A8A8]"
                   onClick={handleClose}
-                >
+                > 
                   <X className="h-3.5 w-3.5 fill-[#9A9A9A]" />
                 </button>
               )}
@@ -1428,7 +1508,13 @@ export function EmailComposer({
             )}
           </div>
         </div>
-        <div className="flex items-start justify-start gap-2">
+        <div className="flex items-start justify-start gap-4">
+            <Button 
+            className='flex p-2 hover:text-black hover:bg-white max-h-[35px] h-screen bg-black text-center text-zinc-300 text-sm'
+            onClick={handleDeleteDraft}
+            disabled = {editor.getText().trim().length < 1}
+            >
+            <Trash className='w-5 h-5 rounded-md'/>Discard</Button>
           <div className="relative">
             <AnimatePresence>
               {aiGeneratedMessage !== null ? (
@@ -1562,6 +1648,15 @@ export function EmailComposer({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {notification && (
+        <DraftNotification
+          message={notification.message}
+          type={notification.type}
+          isVisible={notification.isVisible}
+          onClose={hideNotification}
+          duration={3000}
+        />
+      )}
     </div>
   );
 }

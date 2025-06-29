@@ -636,7 +636,6 @@ export class OutlookMailManager implements MailManager {
         const { html: message, inlineImages } = await sanitizeTipTapHtml(data.message);
 
         const toRecipients = Array.isArray(data.to) ? data.to : data.to.split(', ');
-
         const outlookMessage: Message = {
           subject: data.subject,
           body: {
@@ -707,35 +706,84 @@ export class OutlookMailManager implements MailManager {
         if (allAttachments.length > 0) {
           outlookMessage.attachments = allAttachments;
         }
-
-        let res;
-
-        if (data.id) {
-          try {
-            res = await this.graphClient
-              .api(`/me/mailfolders/drafts/messages/${data.id}`)
-              .patch(outlookMessage);
-          } catch (error) {
-            console.warn(`Failed to update draft ${data.id}, creating a new one`, error);
-            try {
-              await this.graphClient.api(`/me/mailfolders/drafts/messages/${data.id}`).delete();
-            } catch (deleteError) {
-              console.error(`Failed to delete draft ${data.id}`, deleteError);
-            }
-
-            res = await this.graphClient
-              .api('/me/mailfolders/drafts/messages')
-              .post(outlookMessage);
-          }
-        } else {
-          res = await this.graphClient.api('/me/mailfolders/drafts/messages').post(outlookMessage);
-        }
+        const res = await this.graphClient
+          .api('/me/mailfolders/drafts/messages')
+          .post(outlookMessage);
 
         return res;
       },
       { data },
     );
   }
+  public updateDraft(data: CreateDraftData) {
+    return this.withErrorHandler(
+      'updateDraft',
+      async () => {
+        if (!data.id) throw new Error('Draft ID is required to update a draft');
+
+        const message = await sanitizeTipTapHtml(data.message);
+
+        const toRecipients = Array.isArray(data.to) ? data.to : data.to.split(', ');
+        const outlookMessage: Message = {
+          subject: data.subject,
+          body: {
+            contentType: 'html',
+            content: message || '',
+          },
+          toRecipients: toRecipients.map((recipient) => ({
+            emailAddress: {
+              address: typeof recipient === 'string' ? recipient : recipient.email,
+              name: typeof recipient === 'string' ? undefined : recipient.name || undefined,
+            },
+          })),
+        };
+
+        if (data.cc) {
+          const ccRecipients = Array.isArray(data.cc) ? data.cc : data.cc.split(', ');
+          outlookMessage.ccRecipients = ccRecipients.map((recipient) => ({
+            emailAddress: {
+              address: typeof recipient === 'string' ? recipient : recipient.email,
+              name: typeof recipient === 'string' ? undefined : recipient.name || undefined,
+            },
+          }));
+        }
+
+        if (data.bcc) {
+          const bccRecipients = Array.isArray(data.bcc) ? data.bcc : data.bcc.split(', ');
+          outlookMessage.bccRecipients = bccRecipients.map((recipient) => ({
+            emailAddress: {
+              address: typeof recipient === 'string' ? recipient : recipient.email,
+              name: typeof recipient === 'string' ? undefined : recipient.name || undefined,
+            },
+          }));
+        }
+
+        if (data.attachments && data.attachments.length > 0) {
+          outlookMessage.attachments = await Promise.all(
+            data.attachments.map(async (file) => {
+              const arrayBuffer = await file.arrayBuffer();
+              const buffer = Buffer.from(arrayBuffer);
+              const base64Content = buffer.toString('base64');
+
+              return {
+                '@odata.type': '#microsoft.graph.fileAttachment',
+                name: file.name,
+                contentType: file.type || 'application/octet-stream',
+                contentBytes: base64Content,
+              };
+            }),
+          );
+        }
+        const res = await this.graphClient
+          .api(`/me/mailfolders/drafts/messages/${data.id}`)
+          .patch(outlookMessage);
+
+        return res;
+      },
+      { data },
+    );
+  }
+
   public async getUserLabels() {
     try {
       // Get root mail folders

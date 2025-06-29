@@ -61,6 +61,7 @@ export function CreateEmail({
     data: draft,
     isLoading: isDraftLoading,
     error: draftError,
+    refetch: refetchDraft
   } = useDraft(draftId ?? propDraftId ?? null);
   const t = useTranslations();
   const [, setIsDraftFailed] = useState(false);
@@ -165,14 +166,6 @@ export function CreateEmail({
               </button>
             </DialogClose>
           </div>
-          {isDraftLoading ? (
-            <div className="flex h-[600px] w-[750px] items-center justify-center rounded-2xl border">
-              <div className="text-center">
-                <div className="mx-auto mb-4 h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-                <p>Loading draft...</p>
-              </div>
-            </div>
-          ) : (
             <EmailComposer
               key={typedDraft?.id || 'composer'}
               className="mb-12 rounded-2xl border"
@@ -196,11 +189,13 @@ export function CreateEmail({
                 setIsComposeOpen(null);
                 setDraftId(null);
               }}
+              onDraftUpdate={() => {
+                refetchDraft();
+              }}
               initialSubject={typedDraft?.subject || initialSubject}
               autofocus={false}
               settingsLoading={settingsLoading}
             />
-          )}
         </div>
       </Dialog>
     </>

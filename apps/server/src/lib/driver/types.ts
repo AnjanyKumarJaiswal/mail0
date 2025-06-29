@@ -55,6 +55,12 @@ export interface MailManager {
   createDraft(
     data: CreateDraftData,
   ): Promise<{ id?: string | null; success?: boolean; error?: string }>;
+  updateDraft(
+    data: CreateDraftData,
+  ) : Promise<{id?: string | null, success?: boolean, error?: string}>;
+  deleteDraft(
+    data: CreateDraftData
+  ) : Promise<void>;
   getDraft(id: string): Promise<ParsedDraft>;
   listDrafts(params: { q?: string; maxResults?: number; pageToken?: string }): Promise<{
     threads: { id: string; historyId: string | null; $raw: unknown }[];
