@@ -12,7 +12,7 @@ import { useSession } from '@/lib/auth-client';
 import { serializeFiles } from '@/lib/schemas';
 import { useDraft } from '@/hooks/use-drafts';
 import { useNavigate } from 'react-router';
-import { useTranslations } from 'use-intl';
+import { m } from '@/paraglide/messages';
 import { useQueryState } from 'nuqs';
 import { X } from '../icons/icons';
 import posthog from 'posthog-js';
@@ -63,7 +63,7 @@ export function CreateEmail({
     error: draftError,
     refetch: refetchDraft
   } = useDraft(draftId ?? propDraftId ?? null);
-  const t = useTranslations();
+
   const [, setIsDraftFailed] = useState(false);
   const trpc = useTRPC();
   const { mutateAsync: sendEmail } = useMutation(trpc.mail.send.mutationOptions());
@@ -126,7 +126,7 @@ export function CreateEmail({
       posthog.capture('Create Email Sent');
     }
 
-    toast.success(t('pages.createEmail.emailSentSuccessfully'));
+    toast.success(m['pages.createEmail.emailSentSuccessfully']());
   };
 
   useEffect(() => {
