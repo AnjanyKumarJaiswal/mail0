@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Check, Command, Loader, Paperclip, Plus, Type, X as XIcon } from 'lucide-react';
+import { Check, Command, Loader, Paperclip, Trash, Plus, Type, X as XIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TextEffect } from '@/components/motion-primitives/text-effect';
 import { ImageCompressionSettings } from './image-compression-settings';
@@ -35,7 +35,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSettings } from '@/hooks/use-settings';
 
 import { cn, formatFileSize } from '@/lib/utils';
-import { useThread } from '@/hooks/use-threads';
+import { useThread, useThreads } from '@/hooks/use-threads';
 import { serializeFiles } from '@/lib/schemas';
 import { Input } from '@/components/ui/input';
 import { EditorContent } from '@tiptap/react';
@@ -127,6 +127,7 @@ export function EmailComposer({
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isDeleteDraft, setIsDeleteDraft] = useState(false);
+  const [{ isFetching, refetch: refetchThreads }] = useThreads();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [messageLength, setMessageLength] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -665,8 +666,10 @@ export function EmailComposer({
           setDraftId(null); 
           setIsComposeOpen(null);
           setTimeout(() => {
-          const currentUrl = new URL(window.location.href);
-          window.location.href = currentUrl.toString();
+          // const currentUrl = new URL(window.location.href);
+          // window.location.href = currentUrl.toString();
+          toast.success("Successfully Deleted Draft");
+          refetchThreads();
         }, 500);
         } 
         }
@@ -713,6 +716,7 @@ export function EmailComposer({
 
   const confirmLeave = () => {
     setShowLeaveConfirmation(false);
+    DeleteDraft();
     onClose?.();
   };
 
@@ -1549,7 +1553,7 @@ export function EmailComposer({
         <div className="flex items-start justify-start gap-4">
             {/* <Button 
             className='flex p-2 hover:text-black hover:bg-white max-h-[35px] h-screen bg-black text-center text-zinc-300 text-sm'
-            onClick={handleDeleteDraft}
+            onClick={()=>{setShowLeaveConfirmation(true)}}
             disabled = {editor.getText().trim().length < 1}
             >
             <Trash className='w-5 h-5 rounded-md'/>Discard</Button> */}
@@ -1651,7 +1655,7 @@ export function EmailComposer({
               Stay
             </Button>
             <Button variant="destructive" onClick={confirmLeave}>
-              Leave
+              <Trash className='w-5 h-5 rounded-md'/>Discard
             </Button>
           </DialogFooter>
         </DialogContent>
