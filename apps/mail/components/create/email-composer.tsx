@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { Check, Command, Loader, Paperclip, Plus, X as XIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TextEffect } from '@/components/motion-primitives/text-effect';
@@ -72,6 +74,7 @@ interface EmailComposerProps {
   }) => Promise<void>;
   onClose?: () => void;
   onDraftUpdate?: () => void;
+  // onDeleteDrafts?: () => void;
   className?: string;
   autofocus?: boolean;
   settingsLoading?: boolean;
@@ -110,6 +113,7 @@ export function EmailComposer({
   onSendEmail,
   onClose,
   onDraftUpdate,
+  // onDeleteDrafts,
   className,
   autofocus = false,
   settingsLoading = false,
@@ -643,7 +647,7 @@ export function EmailComposer({
   // }
 
   //ths function is going to be used to delete drafts
-  const handleDeleteDraft = async () => {
+  const DeleteDraft = async () => {
     const values = getValues();
     if (!draftId) {
       toast.error('No draft Id available to delete any Draft.');
@@ -1552,12 +1556,12 @@ export function EmailComposer({
           </div>
         </div>
         <div className="flex items-start justify-start gap-4">
-            <Button 
+            {/* <Button 
             className='flex p-2 hover:text-black hover:bg-white max-h-[35px] h-screen bg-black text-center text-zinc-300 text-sm'
             onClick={handleDeleteDraft}
             disabled = {editor.getText().trim().length < 1}
             >
-            <Trash className='w-5 h-5 rounded-md'/>Discard</Button>
+            <Trash className='w-5 h-5 rounded-md'/>Discard</Button> */}
           <div className="relative">
             <AnimatePresence>
               {aiGeneratedMessage !== null ? (

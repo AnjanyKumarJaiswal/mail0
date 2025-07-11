@@ -157,6 +157,8 @@ export function CreateEmail({
     }
   };
 
+  
+
   const base64ToFile = (base64: string, filename: string, mimeType: string): File | null => {
     try {
       const byteString = atob(base64);
