@@ -370,7 +370,8 @@
       "failedToMute": "فشل الكتم",
       "failedToUnmute": "فشل إلغاء الكتم",
       "archived": "تمت الأرشفة",
-      "failedToArchive": "فشلت الأرشفة"
+      "failedToArchive": "فشلت الأرشفة",
+      "openInNewTab": "فتح في علامة تبويب جديدة"
     },
     "units": {
       "mb": "{amount} ميجابايت"
@@ -401,6 +402,7 @@
       "spam": "البريد المزعج",
       "archive": "الأرشيف",
       "bin": "سلة المحذوفات",
+      "livesupport": "الدعم المباشر",
       "feedback": "الملاحظات",
       "settings": "الإعدادات",
       "voice": "المساعد الصوتي"

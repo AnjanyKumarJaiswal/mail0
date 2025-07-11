@@ -370,7 +370,8 @@
       "failedToMute": "بی‌صدا کردن ناموفق بود",
       "failedToUnmute": "فعال کردن صدا ناموفق بود",
       "archived": "بایگانی شد",
-      "failedToArchive": "بایگانی کردن ناموفق بود"
+      "failedToArchive": "بایگانی کردن ناموفق بود",
+      "openInNewTab": "باز کردن در زبانه جدید"
     },
     "units": {
       "mb": "{amount} مگابایت"
@@ -401,6 +402,7 @@
       "spam": "هرزنامه",
       "archive": "آرشیو",
       "bin": "سطل زباله",
+      "livesupport": "پشتیبانی زنده",
       "feedback": "بازخورد",
       "settings": "تنظیمات",
       "voice": "دستیار صوتی"

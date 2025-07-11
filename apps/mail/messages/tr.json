@@ -370,7 +370,8 @@
       "failedToMute": "Sessize alınamadı",
       "failedToUnmute": "Ses açılamadı",
       "archived": "Arşivlendi",
-      "failedToArchive": "Arşivlenemedi"
+      "failedToArchive": "Arşivlenemedi",
+      "openInNewTab": "Yeni sekmede aç"
     },
     "units": {
       "mb": "{amount} MB"
@@ -401,6 +402,7 @@
       "spam": "İstenmeyen E-posta",
       "archive": "Arşiv",
       "bin": "Çöp",
+      "livesupport": "Canlı Destek",
       "feedback": "Geribildirim",
       "settings": "Ayarlar",
       "voice": "Sesli Asistan"

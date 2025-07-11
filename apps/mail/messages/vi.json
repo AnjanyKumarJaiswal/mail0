@@ -370,7 +370,8 @@
       "failedToMute": "Không thể tắt tiếng",
       "failedToUnmute": "Không thể bật tiếng",
       "archived": "Đã lưu trữ",
-      "failedToArchive": "Không thể lưu trữ"
+      "failedToArchive": "Không thể lưu trữ",
+      "openInNewTab": "Mở trong tab mới"
     },
     "units": {
       "mb": "{amount} MB"
@@ -401,6 +402,7 @@
       "spam": "Thư rác",
       "archive": "Lưu trữ",
       "bin": "Thùng rác",
+      "livesupport": "Hỗ trợ trực tuyến",
       "feedback": "Phản hồi",
       "settings": "Cài đặt",
       "voice": "Trợ lý giọng nói"

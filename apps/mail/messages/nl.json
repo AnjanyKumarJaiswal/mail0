@@ -370,7 +370,8 @@
       "failedToMute": "Dempen mislukt",
       "failedToUnmute": "Dempen opheffen mislukt",
       "archived": "Gearchiveerd",
-      "failedToArchive": "Archiveren mislukt"
+      "failedToArchive": "Archiveren mislukt",
+      "openInNewTab": "Openen in nieuw tabblad"
     },
     "units": {
       "mb": "{amount} MB"
@@ -401,6 +402,7 @@
       "spam": "Spam",
       "archive": "Archief",
       "bin": "Prullenbak",
+      "livesupport": "Live ondersteuning",
       "feedback": "Feedback",
       "settings": "Instellingen",
       "voice": "Spraakassistent"
