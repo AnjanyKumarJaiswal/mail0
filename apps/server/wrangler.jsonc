@@ -211,6 +211,10 @@
           "tag": "v3",
           "new_classes": ["ZeroDB"],
         },
+        {
+          "tag": "v4",
+          "new_sqlite_classes": ["ZeroAgent"],
+        },
       ],
       "observability": {
         "enabled": true,
@@ -345,6 +349,10 @@
         {
           "tag": "v3",
           "new_classes": ["ZeroDB"],
+        },
+        {
+          "tag": "v4",
+          "new_sqlite_classes": ["ZeroAgent"],
         },
       ],
       "vars": {
