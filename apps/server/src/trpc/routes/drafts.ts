@@ -30,22 +30,22 @@ export const draftsRouter = router({
     const { activeConnection } = ctx;
     const agent = await getZeroAgent(activeConnection.id);
     const { id } = input;
-    const res = agent.getDraft(id) as Awaited<ReturnType<MailManager['getDraft']>>
-    return res;
+    return agent.getDraft(id) as ReturnType<MailManager['getDraft']>;
   }),
   list: activeDriverProcedure
     .input(
       z.object({
         q: z.string().optional(),
-        max: z.number().optional(),
+        maxResults: z.number().optional(),
         pageToken: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
       const { activeConnection } = ctx;
       const agent = await getZeroAgent(activeConnection.id);
-      const { q, max, pageToken } = input;
-      const res = agent.listDrafts({ q, maxResults: max, pageToken }) as Awaited<ReturnType<MailManager['listDrafts']>>;
-      return res;
+      const { q, maxResults, pageToken } = input;
+      return agent.listDrafts({ q, maxResults, pageToken }) as Awaited<
+        ReturnType<MailManager['listDrafts']>
+      >;
     }),
 });
