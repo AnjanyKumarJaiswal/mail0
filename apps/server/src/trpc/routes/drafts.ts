@@ -15,7 +15,7 @@ export const draftsRouter = router({
     .mutation(async ({input, ctx}) =>{
       const {activeConnection} = ctx;
       const agent = await getZeroAgent(activeConnection.id);
-      const res = agent.updateDraft(input);
+      const res = await agent.updateDraft(input);
       return res;
     }),
   delete: activeDriverProcedure
@@ -24,29 +24,29 @@ export const draftsRouter = router({
       const {activeConnection} = ctx;
       const agent = await getZeroAgent(activeConnection.id);
       const {id} = input;
-      const res = agent.deleteDraft(id);
+      const res = await agent.deleteDraft(id);
       return res;
     }),
   get: activeDriverProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
     const { activeConnection } = ctx;
     const agent = await getZeroAgent(activeConnection.id);
     const { id } = input;
-    return agent.getDraft(id) as ReturnType<MailManager['getDraft']>;
+    const res = agent.getDraft(id) as Awaited<ReturnType<MailManager['getDraft']>>
+    return res;
   }),
   list: activeDriverProcedure
     .input(
       z.object({
         q: z.string().optional(),
-        maxResults: z.number().optional(),
+        max: z.number().optional(),
         pageToken: z.string().optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
       const { activeConnection } = ctx;
       const agent = await getZeroAgent(activeConnection.id);
-      const { q, maxResults, pageToken } = input;
-      return agent.listDrafts({ q, maxResults, pageToken }) as Awaited<
-        ReturnType<MailManager['listDrafts']>
-      >;
+      const { q, max, pageToken } = input;
+      const res = agent.listDrafts({ q, maxResults: max, pageToken }) as Awaited<ReturnType<MailManager['listDrafts']>>;
+      return res;
     }),
 });
