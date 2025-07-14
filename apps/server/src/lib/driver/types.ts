@@ -61,7 +61,7 @@ export interface MailManager {
     data: CreateDraftData,
   ) : Promise<{id?: string | null, success?: boolean, error?: string}>;
   deleteDraft(
-    data: CreateDraftData
+    draftId: string
   ) : Promise<void>;
   getDraft(id: string): Promise<ParsedDraft>;
   listDrafts(params: { q?: string; maxResults?: number; pageToken?: string }): Promise<{

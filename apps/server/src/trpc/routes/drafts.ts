@@ -15,15 +15,16 @@ export const draftsRouter = router({
     .mutation(async ({input, ctx}) =>{
       const {activeConnection} = ctx;
       const agent = await getZeroAgent(activeConnection.id);
-      const res = agent.updateDraft(input)
+      const res = agent.updateDraft(input);
       return res;
     }),
   delete: activeDriverProcedure
-    .input(createDraftData)
+    .input(z.object({id: z.string()}))
     .mutation(async({input,ctx})=>{
       const {activeConnection} = ctx;
       const agent = await getZeroAgent(activeConnection.id);
-      const res = agent.deleteDraft(input);
+      const {id} = input;
+      const res = agent.deleteDraft(id);
       return res;
     }),
   get: activeDriverProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {

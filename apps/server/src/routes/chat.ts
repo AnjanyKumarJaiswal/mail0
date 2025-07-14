@@ -222,8 +222,8 @@ export class AgentRpcDO extends RpcTarget {
     return await this.mainDo.updateDraft(draftData);
   }
 
-  async deleteDraft(draftData: CreateDraftData){
-    return await this.mainDo.deleteDraft(draftData);
+  async deleteDraft(id: string){
+    return await this.mainDo.deleteDraft(id);
   }
 
   async getDraft(id: string) {
@@ -773,16 +773,16 @@ export class ZeroAgent extends AIChatAgent<typeof env> {
 
   async updateDraft(draftData: CreateDraftData){
     if(!this.driver){
-      throw new Error("No driver available")
+      throw new Error('No driver available')
     }
     return await this.driver.updateDraft(draftData);
   }
 
-  async deleteDraft(draftData: CreateDraftData){
+  async deleteDraft(id: string){
     if(!this.driver){
-      throw new Error("No driver available")
+      throw new Error('No driver available')
     }
-    return await this.driver.deleteDraft(draftData);
+    return await this.driver.deleteDraft(id);
   }
 
   async getDraft(id: string) {

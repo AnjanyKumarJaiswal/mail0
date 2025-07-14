@@ -721,7 +721,7 @@ export class OutlookMailManager implements MailManager {
       async () => {
         if (!data.id) throw new Error('Draft ID is required to update a draft');
 
-        const message = await sanitizeTipTapHtml(data.message);
+        const { html: message, inlineImages } = await sanitizeTipTapHtml(data.message);
 
         const toRecipients = Array.isArray(data.to) ? data.to : data.to.split(', ');
         const outlookMessage: Message = {

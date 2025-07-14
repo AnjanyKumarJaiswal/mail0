@@ -75,7 +75,6 @@ interface EmailComposerProps {
   }) => Promise<void>;
   onClose?: () => void;
   onDraftUpdate?: () => void;
-  // onDeleteDrafts?: () => void;
   className?: string;
   autofocus?: boolean;
   settingsLoading?: boolean;
@@ -631,48 +630,23 @@ export function EmailComposer({
     return () => clearTimeout(autoSaveTimer);
   }, [hasUnsavedChanges, saveDraft]);
 
-  // this handleSaveclick for saving drafts might be used in future when save button is introduced
-  // const handleSaveClick = () =>{
-  //   const hasContent = editor?.getText()?.trim().length > 0;
-  //   if(hasContent){
-  //     onDraftUpdate?.();
-  //     showSaveNotification('Your Draft has been Successfully Saved');
-  //   }
-  // }
-
   //ths function is going to be used to delete drafts
-  const DeleteDraft = async () => {
+  const handledeleteDraft = async () => {
     const values = getValues();
     if (!draftId) {
       toast.error('No draft Id available to delete any Draft.');
       return;
     }
-    try {
-      const draftData = {
-        to: values.to.join(', '),
-        cc: values.cc?.join(', '),
-        bcc: values.bcc?.join(', '),
-        subject: values.subject,
-        message: editor.getHTML(),
-        attachments: await serializeFiles(values.attachments ?? []),
-        id: draftId,
-        threadId: threadId ? threadId : null,
-        fromEmail: values.fromEmail ? values.fromEmail : null,
-      };
-
-      if(draftId){
-        const response = await deleteDraft(draftData);
-        if(response === ''){
+    try{
+      const response = await deleteDraft({id: draftId});
+      if(response === ''){
           setDraftId(null); 
           setIsComposeOpen(null);
           setTimeout(() => {
-          // const currentUrl = new URL(window.location.href);
-          // window.location.href = currentUrl.toString();
           toast.success("Successfully Deleted Draft");
           refetchThreads();
         }, 500);
-        } 
-        }
+      } 
     } catch (error) {
       console.error('Failed to delete draft:', error);
       toast.error('Failed to delete draft.');
@@ -716,7 +690,7 @@ export function EmailComposer({
 
   const confirmLeave = () => {
     setShowLeaveConfirmation(false);
-    DeleteDraft();
+    handledeleteDraft();
     onClose?.();
   };
 
