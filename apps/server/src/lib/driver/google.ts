@@ -8,7 +8,6 @@ import {
   sanitizeContext,
   StandardizedError,
 } from './utils';
-import { Effect } from 'effect';
 import { mapGoogleLabelColor, mapToGoogleLabelColor } from './google-label-color-map';
 import { parseAddressList, parseFrom, wasSentWithTLS } from '../email-utils';
 import type { IOutgoingMessage, Label, ParsedMessage } from '../../types';
@@ -21,6 +20,7 @@ import { createMimeMessage } from 'mimetext';
 import { people } from '@googleapis/people';
 import { cleanSearchValue } from '../utils';
 import { env } from 'cloudflare:workers';
+import { Effect } from 'effect';
 import * as he from 'he';
 
 export class GoogleMailManager implements MailManager {
@@ -190,19 +190,20 @@ export class GoogleMailManager implements MailManager {
         if (!userLabels.data.labels) {
           return [];
         }
-        
+
         const labelRequests = userLabels.data.labels.map((label) =>
           Effect.tryPromise({
-            try: () => this.gmail.users.labels.get({
-              userId: 'me',
-              id: label.id ?? undefined,
-            }),
+            try: () =>
+              this.gmail.users.labels.get({
+                userId: 'me',
+                id: label.id ?? undefined,
+              }),
             catch: (error) => ({ _tag: 'LabelFetchFailed' as const, error }),
-          })
+          }),
         );
 
         const results = await Effect.runPromise(
-          Effect.all(labelRequests, { concurrency: 'unbounded' })
+          Effect.all(labelRequests, { concurrency: 'unbounded' }),
         );
 
         return results.map((res) => ({
@@ -212,6 +213,10 @@ export class GoogleMailManager implements MailManager {
       },
       { email: this.config.auth?.email },
     );
+  }
+
+  private getQuotaUser() {
+    return this.config.auth?.email ? `${this.config.auth.email}-${env.NODE_ENV}` : undefined;
   }
   public list(params: {
     folder: string;
@@ -234,7 +239,7 @@ export class GoogleMailManager implements MailManager {
           labelIds: folder === 'inbox' ? labelIds : [],
           maxResults,
           pageToken: pageToken ? pageToken : undefined,
-          quotaUser: this.config.auth?.email,
+          quotaUser: this.getQuotaUser(),
         });
 
         const threads = res.data.threads ?? [];
@@ -262,7 +267,7 @@ export class GoogleMailManager implements MailManager {
           userId: 'me',
           id,
           format: 'full',
-          quotaUser: this.config.auth?.email,
+          quotaUser: this.getQuotaUser(),
         });
 
         if (!res.data.messages)
@@ -867,7 +872,8 @@ export class GoogleMailManager implements MailManager {
         const res = await this.gmail.users.threads.get({
           userId: 'me',
           id: threadId,
-          format: 'metadata', // Fetch only metadata
+          format: 'metadata', // Fetch only metadata,
+          quotaUser: this.getQuotaUser(),
         });
         // Process res.data.messages to extract id and labelIds
         return {
