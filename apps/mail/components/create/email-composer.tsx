@@ -636,7 +636,7 @@ export function EmailComposer({
     }, 3000);
 
     return () => clearTimeout(autoSaveTimer);
-  }, [hasUnsavedChanges, saveDraft]);
+  }, [hasUnsavedChanges]);
 
 
   const handledeleteDraft = async () => {
