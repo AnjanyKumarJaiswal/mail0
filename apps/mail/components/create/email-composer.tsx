@@ -638,7 +638,6 @@ export function EmailComposer({
     return () => clearTimeout(autoSaveTimer);
   }, [hasUnsavedChanges, saveDraft]);
 
- ]
 
   const handledeleteDraft = async () => {
     const values = getValues();
@@ -1536,12 +1535,6 @@ export function EmailComposer({
           </div>
         </div>
         <div className="flex items-start justify-start gap-4">
-            {/* <Button 
-            className='flex p-2 hover:text-black hover:bg-white max-h-[35px] h-screen bg-black text-center text-zinc-300 text-sm'
-            onClick={()=>{setShowLeaveConfirmation(true)}}
-            disabled = {editor.getText().trim().length < 1}
-            >
-            <Trash className='w-5 h-5 rounded-md'/>Discard</Button> */}
           <div className="relative">
             <AnimatePresence>
               {aiGeneratedMessage !== null ? (
