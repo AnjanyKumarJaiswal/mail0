@@ -39,6 +39,10 @@
             "name": "ZERO_DB",
             "class_name": "ZeroDB",
           },
+          {
+            "name": "ZERO_DRIVER",
+            "class_name": "ZeroDriver",
+          },
         ],
       },
       "queues": {
@@ -78,10 +82,17 @@
           "tag": "v4",
           "deleted_classes": ["DurableMailbox"],
         },
+        {
+          "tag": "v5",
+          "new_sqlite_classes": ["ZeroDriver"],
+        },
       ],
 
       "observability": {
         "enabled": true,
+      },
+      "triggers": {
+        "crons": ["*/1 * * * *"],
       },
       "hyperdrive": [
         {
@@ -103,7 +114,7 @@
         "DROP_AGENT_TABLES": "false",
         "THREAD_SYNC_MAX_COUNT": "5",
         "THREAD_SYNC_LOOP": "false",
-        "DISABLE_WORKFLOWS": "true",
+        "DISABLE_WORKFLOWS": "false",
         "AUTORAG_ID": "",
       },
       "kv_namespaces": [
@@ -130,6 +141,10 @@
         {
           "binding": "gmail_sub_age",
           "id": "c55e692bb71d4e5bae23dded092b09d5",
+        },
+        {
+          "binding": "snoozed_emails",
+          "id": "f3a30ed7198542d890db172536bade33",
         },
       ],
     },
@@ -166,6 +181,10 @@
           {
             "name": "ZERO_DB",
             "class_name": "ZeroDB",
+          },
+          {
+            "name": "ZERO_DRIVER",
+            "class_name": "ZeroDriver",
           },
         ],
       },
@@ -216,6 +235,10 @@
           "tag": "v5",
           "deleted_classes": ["DurableMailbox"],
         },
+        {
+          "tag": "v6",
+          "new_sqlite_classes": ["ZeroDriver"],
+        },
       ],
       "observability": {
         "enabled": true,
@@ -235,7 +258,7 @@
         "DISABLE_CALLS": "",
         "DROP_AGENT_TABLES": "false",
         "THREAD_SYNC_MAX_COUNT": "20",
-        "THREAD_SYNC_LOOP": "false",
+        "THREAD_SYNC_LOOP": "true",
         "DISABLE_WORKFLOWS": "true",
       },
       "kv_namespaces": [
@@ -262,6 +285,10 @@
         {
           "binding": "gmail_sub_age",
           "id": "c55e692bb71d4e5bae23dded092b09d5",
+        },
+        {
+          "binding": "snoozed_emails",
+          "id": "f3a30ed7198542d890db172536bade33",
         },
       ],
     },
@@ -312,6 +339,10 @@
             "name": "ZERO_DB",
             "class_name": "ZeroDB",
           },
+          {
+            "name": "ZERO_DRIVER",
+            "class_name": "ZeroDriver",
+          },
         ],
       },
       "queues": {
@@ -355,6 +386,10 @@
           "tag": "v5",
           "deleted_classes": ["DurableMailbox"],
         },
+        {
+          "tag": "v6",
+          "new_sqlite_classes": ["ZeroDriver"],
+        },
       ],
       "vars": {
         "NODE_ENV": "production",
@@ -391,6 +426,10 @@
         {
           "binding": "gmail_sub_age",
           "id": "0591e91fffcc4675aaf00f909bee77d2",
+        },
+        {
+          "binding": "snoozed_emails",
+          "id": "f0952e9c3b024cb499c4b9dfe8bb603e",
         },
       ],
     },
