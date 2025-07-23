@@ -639,8 +639,7 @@ export function EmailComposer({
   }, [hasUnsavedChanges]);
 
 
-  const handledeleteDraft = async () => {
-    const values = getValues();
+  const handleDeleteDraft = async () => {
     if (!draftId) {
       toast.error('No draft Id available to delete the draft.');
       return;
@@ -658,11 +657,8 @@ export function EmailComposer({
     } catch (error) {
       console.error('Failed to delete draft:', error);
       toast.error('Failed to delete draft.');
-    } finally {
-      setIsDeleteDraft(false);
     }
   };
-
   // this handleclose button triggeres to auto-save draft upon close 
   const handleClose = () => {
     const hasContent = editor?.getText()?.trim().length > 0;
