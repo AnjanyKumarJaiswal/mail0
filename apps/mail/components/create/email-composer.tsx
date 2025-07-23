@@ -31,7 +31,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useTRPC } from '@/providers/query-provider';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSettings } from '@/hooks/use-settings';
 
 import { cn, formatFileSize } from '@/lib/utils';
@@ -587,27 +587,35 @@ export function EmailComposer({
       };
 
       if(draftId){
-        const response = await updateDraft(draftData);
-        if(response?.id){
-          setDraftId(response?.id);
-          onDraftUpdate?.();
-          toast.success("Your Draft has been Successfully Saved")
-        }
-        else{
-          const response = await createDraft(draftData);
+        try{
+          const response = await updateDraft(draftData);
           if(response?.id){
-          setDraftId(response?.id);
-          toast.success("Your Draft has been Successfully Saved")
+            setDraftId(response?.id);
+            onDraftUpdate?.();
+            toast.success("Your Draft has been Successfully Saved")
+        } 
+          else{
+            console.error("Failed Setting up Draft Id")
+            toast.error("Failed Setting up Draft Id")
         }
-          console.error("Failed Setting up Draft Id")
-          toast.error("Failed Setting up Draft Id")
+        } catch(error){
+          console.error("Failed to create draft:",error)
+          toast.error("Failed to create draft")
         }
       } else {
-      const response = await createDraft(draftData);
-      if(response?.id){
-        setDraftId(response?.id);
-        toast.success("Your Draft has been Successfully Saved")
-      }
+          try{
+            const response = await createDraft(draftData);
+            if(response?.id){
+              setDraftId(response?.id);
+              toast.success("Your Draft has been Successfully Saved")
+            } else{
+              console.error("Failed Setting up Draft Id")
+              toast.error("Failed Setting up Draft Id")
+            }
+          }catch (error) {
+              console.error("Failed to create draft:", error);
+              toast.error("Failed to create draft");
+          }
     }
     } catch (error) {
       console.error('Error saving draft:', error);
@@ -624,18 +632,18 @@ export function EmailComposer({
     if (!hasUnsavedChanges) return;
 
     const autoSaveTimer = setTimeout(() => {
-      console.log('Draft Save TimeOut');
       saveDraft();
     }, 3000);
 
     return () => clearTimeout(autoSaveTimer);
   }, [hasUnsavedChanges, saveDraft]);
 
-  //ths function is going to be used to delete drafts
+ ]
+
   const handledeleteDraft = async () => {
     const values = getValues();
     if (!draftId) {
-      toast.error('No draft Id available to delete any Draft.');
+      toast.error('No draft Id available to delete the draft.');
       return;
     }
     try{
@@ -644,8 +652,8 @@ export function EmailComposer({
           setDraftId(null); 
           setIsComposeOpen(null);
           setTimeout(() => {
-          toast.success("Successfully Deleted Draft");
-          refetchThreads();
+            toast.success("Successfully Deleted Draft");
+            refetchThreads();
         }, 500);
       } 
     } catch (error) {

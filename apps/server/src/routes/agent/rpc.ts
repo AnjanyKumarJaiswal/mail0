@@ -110,6 +110,14 @@ export class AgentRpcDO extends RpcTarget {
     return await this.mainDo.createDraft(draftData);
   }
 
+   async updateDraft(draftData: CreateDraftData){
+    return await this.mainDo.updateDraft(draftData);
+  }
+
+  async deleteDraft(draftId: string){
+    return await this.mainDo.deleteDraft(draftId);
+  }
+
   async getDraft(id: string) {
     return await this.mainDo.getDraft(id);
   }

@@ -70,11 +70,11 @@ export interface MailManager {
     data: CreateDraftData,
   ): Promise<{ id?: string | null; success?: boolean; error?: string }>;
   updateDraft(
-    data: CreateDraftData,
-  ) : Promise<{id?: string | null, success?: boolean, error?: string}>;
+    data: CreateDraftData
+  ): Promise<{ id?: string | null, success?: boolean, error?: string}>;
   deleteDraft(
     draftId: string
-  ) : Promise<void>;
+  ): Promise<void>;
   getDraft(id: string): Promise<ParsedDraft>;
   listDrafts(params: { q?: string; maxResults?: number; pageToken?: string }): Promise<{
     threads: { id: string; historyId: string | null; $raw: unknown }[];

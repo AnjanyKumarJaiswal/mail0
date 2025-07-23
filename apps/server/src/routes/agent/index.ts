@@ -510,7 +510,7 @@ export class ZeroAgent extends AIChatAgent<typeof env> {
     return await this.driver.createDraft(draftData);
   }
 
-  async updateDraft(draftData: CreateDraftData){
+  async updateDraft( draftData: CreateDraftData){
     if(!this.driver){
       throw new Error('No driver available')
     }
