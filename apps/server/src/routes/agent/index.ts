@@ -1090,8 +1090,20 @@ export class ZeroAgent extends AIChatAgent<typeof env> {
     });
   }
 
+  async registerThinkingMCP() {
+    await this.mcp.connect(env.VITE_PUBLIC_BACKEND_URL + '/mcp/thinking/sse', {
+      transport: {
+        authProvider: new DurableObjectOAuthClientProvider(
+          this.ctx.storage,
+          'thinking-mcp',
+          env.VITE_PUBLIC_BACKEND_URL,
+        ),
+      },
+    });
+  }
+
   onStart(): void | Promise<void> {
-    // this.registerZeroMCP();
+    this.registerThinkingMCP();
   }
 
   private getDataStreamResponse(
@@ -1105,11 +1117,14 @@ export class ZeroAgent extends AIChatAgent<typeof env> {
         if (this.name === 'general') return;
         const connectionId = this.name;
         const orchestrator = new ToolOrchestrator(dataStream, connectionId);
-        // const mcpTools = await this.mcp.unstable_getAITools();
+
+        const mcpTools = this.mcp.unstable_getAITools();
 
         const rawTools = {
           ...(await authTools(connectionId)),
+          ...mcpTools,
         };
+
         const tools = orchestrator.processTools(rawTools);
         const processedMessages = await processToolCalls(
           {
@@ -1120,8 +1135,13 @@ export class ZeroAgent extends AIChatAgent<typeof env> {
           {},
         );
 
+        const model =
+          env.USE_OPENAI === 'true'
+            ? openai(env.OPENAI_MODEL || 'gpt-4o')
+            : anthropic(env.OPENAI_MODEL || 'claude-3-7-sonnet-20250219');
+
         const result = streamText({
-          model: anthropic(env.OPENAI_MODEL || 'claude-3-5-haiku-latest'),
+          model,
           maxSteps: 10,
           messages: processedMessages,
           tools,
